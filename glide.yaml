@@ -1,0 +1,7 @@
+package: github.com/gambol99/go-marathon
+import:
+- package: github.com/donovanhide/eventsource
+- package: github.com/golang/glog
+- package: github.com/google/go-querystring
+  subpackages:
+  - query

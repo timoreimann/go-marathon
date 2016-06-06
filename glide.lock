@@ -1,0 +1,12 @@
+hash: 66b70ea772fa8db5b0d1289f760c913ee413f7612af763b2403e51af507b1ab9
+updated: 2016-06-07T01:25:57.384017841+02:00
+imports:
+- name: github.com/donovanhide/eventsource
+  version: fd1de70867126402be23c306e1ce32828455d85b
+- name: github.com/golang/glog
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+- name: github.com/google/go-querystring
+  version: 9235644dd9e52eeae6fa48efd539fdc351a0af53
+  subpackages:
+  - query
+devImports: []
