@@ -198,14 +198,30 @@ func TestApplicationEnvs(t *testing.T) {
 	app := NewDockerApplication()
 	assert.Nil(t, app.Env)
 
-	app.AddEnv("hello", "world").AddEnv("foo", "bar")
-	assert.Equal(t, 2, len(*app.Env))
+	app.AddEnv("hello", "world").AddEnv("foo", "bar").AddEnvSecret("top", "secret1")
+	assert.Equal(t, 3, len(*app.Env))
 	assert.Equal(t, "world", (*app.Env)["hello"])
 	assert.Equal(t, "bar", (*app.Env)["foo"])
+	assert.Equal(t, EnvSecretValue{Secret: "secret1"}, (*app.Env)["top"])
 
 	app.EmptyEnvs()
 	assert.NotNil(t, app.Env)
 	assert.Equal(t, 0, len(*app.Env))
+}
+
+func TestApplicationSecrets(t *testing.T) {
+	app := NewDockerApplication()
+	assert.Nil(t, app.Env)
+
+	app.AddSecret("secret0", "path/to/my/secret")
+	app.AddSecret("secret1", "path/to/my/other/secret")
+	assert.Equal(t, 2, len(*app.Secrets))
+	assert.Equal(t, Secret{Source: "path/to/my/secret"}, (*app.Secrets)["secret0"])
+	assert.Equal(t, Secret{Source: "path/to/my/other/secret"}, (*app.Secrets)["secret1"])
+
+	app.EmptySecrets()
+	assert.NotNil(t, app.Secrets)
+	assert.Equal(t, 0, len(*app.Secrets))
 }
 
 func TestApplicationSetExecutor(t *testing.T) {

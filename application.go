@@ -149,6 +149,18 @@ type Stats struct {
 	LifeTime map[string]float64 `json:"lifeTime"`
 }
 
+// Secret is a declaration of an exsiting secret object whose value will be used to replace
+// environment variables with a matching 'secret' reference
+type Secret struct {
+	Source string `json:"source"`
+}
+
+// EnvSecretValue is a reference to a secret whose value will be used as the value of the named
+// environment variable
+type EnvSecretValue struct {
+	Secret string `json:"secret"`
+}
+
 // SetIPAddressPerTask defines that the application will have a IP address defines by a external agent.
 // This configuration is not allowed to be used with Port or PortDefinitions. Thus, the implementation
 // clears both.
@@ -366,11 +378,44 @@ func (r *Application) AddEnv(name, value string) *Application {
 	return r
 }
 
+// AddEnvSecret adds an environment variable secret to the application
+//		name:	the name of the variable
+//		secret:	the name of secret defined in the application's Secrets
+func (r *Application) AddEnvSecret(name, secret string) *Application {
+	if r.Env == nil {
+		r.EmptyEnvs()
+	}
+	(*r.Env)[name] = EnvSecretValue{Secret: secret}
+
+	return r
+}
+
+// AddSecret adds a secret declaration
+//		name:	the name of the variable
+//		source:	the source id of the secret
+func (r *Application) AddSecret(name, source string) *Application {
+	if r.Secrets == nil {
+		r.EmptySecrets()
+	}
+	(*r.Secrets)[name] = Secret{Source: source}
+
+	return r
+}
+
 // EmptyEnvs explicitly empties the envs -- use this if you need to empty
 // the environments of an application that already has environments set (setting env to nil will
 // keep the current value)
 func (r *Application) EmptyEnvs() *Application {
-	r.Env = &map[string]string{}
+	r.Env = &map[string]interface{}{}
+
+	return r
+}
+
+// EmptySecrets explicitly empties the secrets -- use this if you need to empty
+// the secrets of an application that already has secrets set (setting secrets to nil will
+// keep the current value)
+func (r *Application) EmptySecrets() *Application {
+	r.Secrets = &map[string]Secret{}
 
 	return r
 }
