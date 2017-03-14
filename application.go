@@ -17,10 +17,12 @@ limitations under the License.
 package marathon
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -149,16 +151,42 @@ type Stats struct {
 	LifeTime map[string]float64 `json:"lifeTime"`
 }
 
-// Secret is a declaration of an existing secret object whose value will be used to replace
-// environment variables with a matching 'secret' reference
-type Secret struct {
-	Source string `json:"source"`
+// EnvValue represents either a string environment variable value, or
+// a reference to a Secret defined in the Secrets attribute of the Application
+type EnvValue struct {
+	Value  string
+	Secret string `json:"secret"`
 }
 
-// EnvSecretValue is a reference to a secret whose value will be used as the value of the named
-// environment variable
-type EnvSecretValue struct {
-	Secret string `json:"secret"`
+// MarshalJSON marshalls an EnvValue to JSON
+func (v EnvValue) MarshalJSON() ([]byte, error) {
+	buffer := bytes.NewBufferString("")
+	if len(v.Secret) > 0 {
+		buffer.WriteString(fmt.Sprintf("{\"secret\": \"%s\"}", v.Secret))
+	} else {
+		buffer.WriteString(fmt.Sprintf("\"%s\"", v.Value))
+	}
+	return buffer.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshalls an EnvValue from JSON
+func (v EnvValue) UnmarshalJSON(b []byte) error {
+	value := strings.TrimLeft(string(b), " \n")
+	if strings.HasPrefix(value, "{") {
+		err := json.Unmarshal(b, &v)
+		if err != nil {
+			return err
+		}
+	} else {
+		v.Value = value
+	}
+	return nil
+}
+
+// Secret is a reference to an existing secret object whose value may be used
+// as the value of any referencing environment variables.
+type Secret struct {
+	Source string `json:"source"`
 }
 
 // SetIPAddressPerTask defines that the application will have a IP address defines by a external agent.
@@ -373,7 +401,37 @@ func (r *Application) AddEnv(name, value string) *Application {
 	if r.Env == nil {
 		r.EmptyEnvs()
 	}
-	(*r.Env)[name] = value
+	(*r.Env)[name] = EnvValue{Value: value}
+
+	return r
+}
+
+// EmptyEnvs explicitly empties the envs -- use this if you need to empty
+// the environments of an application that already has environments set (setting env to nil will
+// keep the current value)
+func (r *Application) EmptyEnvs() *Application {
+	r.Env = &map[string]EnvValue{}
+
+	return r
+}
+
+// AddSecret adds a secret declaration
+//		name:	the name of the variable
+//		source:	the source ID of the secret
+func (r *Application) AddSecret(name, source string) *Application {
+	if r.Secrets == nil {
+		r.EmptySecrets()
+	}
+	(*r.Secrets)[name] = Secret{Source: source}
+
+	return r
+}
+
+// EmptySecrets explicitly empties the secrets -- use this if you need to empty
+// the secrets of an application that already has secrets set (setting secrets to nil will
+// keep the current value)
+func (r *Application) EmptySecrets() *Application {
+	r.Secrets = &map[string]Secret{}
 
 	return r
 }
@@ -385,37 +443,7 @@ func (r *Application) AddEnvSecret(name, secret string) *Application {
 	if r.Env == nil {
 		r.EmptyEnvs()
 	}
-	(*r.Env)[name] = EnvSecretValue{Secret: secret}
-
-	return r
-}
-
-// AddSecret adds a secret declaration
-//		name:	the name of the variable
-//		source:	the source id of the secret
-func (r *Application) AddSecret(name, source string) *Application {
-	if r.Secrets == nil {
-		r.EmptySecrets()
-	}
-	(*r.Secrets)[name] = Secret{Source: source}
-
-	return r
-}
-
-// EmptyEnvs explicitly empties the envs -- use this if you need to empty
-// the environments of an application that already has environments set (setting env to nil will
-// keep the current value)
-func (r *Application) EmptyEnvs() *Application {
-	r.Env = &map[string]interface{}{}
-
-	return r
-}
-
-// EmptySecrets explicitly empties the secrets -- use this if you need to empty
-// the secrets of an application that already has secrets set (setting secrets to nil will
-// keep the current value)
-func (r *Application) EmptySecrets() *Application {
-	r.Secrets = &map[string]Secret{}
+	(*r.Env)[name] = EnvValue{Secret: secret}
 
 	return r
 }

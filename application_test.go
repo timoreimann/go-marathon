@@ -200,9 +200,9 @@ func TestApplicationEnvs(t *testing.T) {
 
 	app.AddEnv("hello", "world").AddEnv("foo", "bar").AddEnvSecret("top", "secret1")
 	assert.Equal(t, 3, len(*app.Env))
-	assert.Equal(t, "world", (*app.Env)["hello"])
-	assert.Equal(t, "bar", (*app.Env)["foo"])
-	assert.Equal(t, EnvSecretValue{Secret: "secret1"}, (*app.Env)["top"])
+	assert.Equal(t, EnvValue{Value: "world"}, (*app.Env)["hello"])
+	assert.Equal(t, EnvValue{Value: "bar"}, (*app.Env)["foo"])
+	assert.Equal(t, EnvValue{Secret: "secret1"}, (*app.Env)["top"])
 
 	app.EmptyEnvs()
 	assert.NotNil(t, app.Env)
