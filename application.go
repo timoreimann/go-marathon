@@ -170,7 +170,7 @@ func (v EnvValue) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON unmarshalls an EnvValue from JSON
-func (v EnvValue) UnmarshalJSON(b []byte) error {
+func (v *EnvValue) UnmarshalJSON(b []byte) error {
 	value := strings.TrimLeft(string(b), " \n")
 	if strings.HasPrefix(value, "{") {
 		hash := make(map[string]string)
@@ -178,9 +178,10 @@ func (v EnvValue) UnmarshalJSON(b []byte) error {
 		if err != nil {
 			return err
 		}
-		v.Secret = hash["secret"]
+		*v = EnvValue{Secret: hash["secret"]}
 	} else {
-		v.Value = strings.TrimSuffix(strings.TrimPrefix(value, "\""), "\"")
+
+		*v = EnvValue{Value: strings.TrimSuffix(strings.TrimPrefix(value, "\""), "\"")}
 	}
 	return nil
 }

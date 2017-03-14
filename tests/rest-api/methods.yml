@@ -109,7 +109,7 @@
             "env": {
                 "VAR": "VALUE",
                 "SECRET1": {
-                    "secret": "SECRET_VALUE"
+                    "secret": "secret0"
                 }
             },
             "executor": "",
@@ -134,7 +134,7 @@
             ],
             "requirePorts": false,
             "secrets": {
-                "SECRET1": {
+                "secret0": {
                   "source": "secret/definition/id"
                 }
             },

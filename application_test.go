@@ -363,6 +363,8 @@ func TestApplications(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, applications)
 	assert.Equal(t, len(applications.Apps), 2)
+	assert.Equal(t, (*applications.Apps[0].Env)["SECRET1"].Secret, "secret0")
+	assert.Equal(t, (*applications.Apps[0].Secrets)["secret0"].Source, "secret/definition/id")
 
 	v := url.Values{}
 	v.Set("cmd", "nginx")
