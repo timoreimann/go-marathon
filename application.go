@@ -149,7 +149,7 @@ type Stats struct {
 	LifeTime map[string]float64 `json:"lifeTime"`
 }
 
-// Secret is a declaration of an exsiting secret object whose value will be used to replace
+// Secret is a declaration of an existing secret object whose value will be used to replace
 // environment variables with a matching 'secret' reference
 type Secret struct {
 	Source string `json:"source"`
