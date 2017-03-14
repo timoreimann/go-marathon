@@ -173,12 +173,14 @@ func (v EnvValue) MarshalJSON() ([]byte, error) {
 func (v EnvValue) UnmarshalJSON(b []byte) error {
 	value := strings.TrimLeft(string(b), " \n")
 	if strings.HasPrefix(value, "{") {
-		err := json.Unmarshal(b, &v)
+		hash := make(map[string]string)
+		err := json.Unmarshal(b, &hash)
 		if err != nil {
 			return err
 		}
+		v.Secret = hash["secret"]
 	} else {
-		v.Value = value
+		v.Value = strings.TrimSuffix(strings.TrimPrefix(value, "\""), "\"")
 	}
 	return nil
 }
