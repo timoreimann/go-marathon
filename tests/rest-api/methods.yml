@@ -108,13 +108,8 @@
             "disk": 0.0,
             "env": {
                 "VAR": "VALUE",
-<<<<<<< 1ec08053e35e81ae5b6834f1891b2492106fcf90
                 "SECRET1": {
                     "secret": "secret0"
-=======
-                "SECRET": {
-                    "secret": "SECRET_VALUE"
->>>>>>> support secrets
                 }
             },
             "executor": "",
