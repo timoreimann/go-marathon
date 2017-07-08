@@ -1416,3 +1416,24 @@
           "unreachableStrategy": "disabled"
       }
     }
+
+- uri: /v2/apps/fake-app
+  method: GET
+  scope: environment-variables
+  content: |
+    {
+    "app": {
+          "id": "/fake-app",
+          "env": {
+            "FOO": "bar",
+            "TOP": {
+              "secret": "secret"
+              }
+            },
+          "secrets":{
+            "secret": {
+              "source": "/path/to/secret"
+              }
+            }
+      }
+    }

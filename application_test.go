@@ -198,11 +198,11 @@ func TestApplicationEnvs(t *testing.T) {
 	app := NewDockerApplication()
 	assert.Nil(t, app.Env)
 
-	app.AddEnv("hello", "world").AddEnv("foo", "bar").AddEnvSecret("top", "secret1")
+	app.AddEnv("hello", "world").AddEnv("foo", "bar").AddSecret("top", "secret1", "/path/to/secret")
 	assert.Equal(t, 3, len(*app.Env))
-	assert.Equal(t, EnvValue{Value: "world"}, (*app.Env)["hello"])
-	assert.Equal(t, EnvValue{Value: "bar"}, (*app.Env)["foo"])
-	assert.Equal(t, EnvValue{Secret: "secret1"}, (*app.Env)["top"])
+	assert.Equal(t, EnvironmentVariable{"world", EnvSecret{}}, (*app.Env)["hello"])
+	assert.Equal(t, EnvironmentVariable{"bar", EnvSecret{}}, (*app.Env)["foo"])
+	assert.Equal(t, EnvironmentVariable{"", EnvSecret{"secret1"}}, (*app.Env)["top"])
 
 	app.EmptyEnvs()
 	assert.NotNil(t, app.Env)
@@ -213,8 +213,8 @@ func TestApplicationSecrets(t *testing.T) {
 	app := NewDockerApplication()
 	assert.Nil(t, app.Env)
 
-	app.AddSecret("secret0", "path/to/my/secret")
-	app.AddSecret("secret1", "path/to/my/other/secret")
+	app.AddSecret("MY_FIRST_SECRET", "secret0", "path/to/my/secret")
+	app.AddSecret("MY_SECOND_SECRET", "secret1", "path/to/my/other/secret")
 	assert.Equal(t, 2, len(*app.Secrets))
 	assert.Equal(t, Secret{Source: "path/to/my/secret"}, (*app.Secrets)["secret0"])
 	assert.Equal(t, Secret{Source: "path/to/my/other/secret"}, (*app.Secrets)["secret1"])
@@ -753,4 +753,3 @@ func TestUpgradeStrategy(t *testing.T) {
 	assert.Nil(t, us.MinimumHealthCapacity)
 	assert.Nil(t, us.MaximumOverCapacity)
 }
-
