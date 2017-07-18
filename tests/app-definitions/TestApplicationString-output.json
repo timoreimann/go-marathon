@@ -38,8 +38,7 @@
       "protocol": "HTTP",
       "gracePeriodSeconds": 30,
       "intervalSeconds": 5,
-      "timeoutSeconds": 5,
-      "ignoreHttp1xx": null
+      "timeoutSeconds": 5
     }
   ],
   "instances": 2,
