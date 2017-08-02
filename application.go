@@ -56,29 +56,28 @@ type Port struct {
 
 // Application is the definition for an application in marathon
 type Application struct {
-	ID                         string                          `json:"id,omitempty"`
-	Cmd                        *string                         `json:"cmd,omitempty"`
-	Args                       *[]string                       `json:"args,omitempty"`
-	Constraints                *[][]string                     `json:"constraints,omitempty"`
-	Container                  *Container                      `json:"container,omitempty"`
-	CPUs                       float64                         `json:"cpus,omitempty"`
-	GPUs                       *float64                        `json:"gpus,omitempty"`
-	Disk                       *float64                        `json:"disk,omitempty"`
-	Env                        *map[string]EnvironmentVariable `json:"env,omitempty"`
-	Executor                   *string                         `json:"executor,omitempty"`
-	HealthChecks               *[]HealthCheck                  `json:"healthChecks,omitempty"`
-	ReadinessChecks            *[]ReadinessCheck               `json:"readinessChecks,omitempty"`
-	Instances                  *int                            `json:"instances,omitempty"`
-	Mem                        *float64                        `json:"mem,omitempty"`
-	Tasks                      []*Task                         `json:"tasks,omitempty"`
-	Ports                      []int                           `json:"ports"`
-	PortDefinitions            *[]PortDefinition               `json:"portDefinitions,omitempty"`
-	RequirePorts               *bool                           `json:"requirePorts,omitempty"`
-	BackoffSeconds             *float64                        `json:"backoffSeconds,omitempty"`
-	BackoffFactor              *float64                        `json:"backoffFactor,omitempty"`
-	MaxLaunchDelaySeconds      *float64                        `json:"maxLaunchDelaySeconds,omitempty"`
-	TaskKillGracePeriodSeconds *float64                        `json:"taskKillGracePeriodSeconds,omitempty"`
-	Deployments                []map[string]string             `json:"deployments,omitempty"`
+	ID                         string              `json:"id,omitempty"`
+	Cmd                        *string             `json:"cmd,omitempty"`
+	Args                       *[]string           `json:"args,omitempty"`
+	Constraints                *[][]string         `json:"constraints,omitempty"`
+	Container                  *Container          `json:"container,omitempty"`
+	CPUs                       float64             `json:"cpus,omitempty"`
+	GPUs                       *float64            `json:"gpus,omitempty"`
+	Disk                       *float64            `json:"disk,omitempty"`
+	Executor                   *string             `json:"executor,omitempty"`
+	HealthChecks               *[]HealthCheck      `json:"healthChecks,omitempty"`
+	ReadinessChecks            *[]ReadinessCheck   `json:"readinessChecks,omitempty"`
+	Instances                  *int                `json:"instances,omitempty"`
+	Mem                        *float64            `json:"mem,omitempty"`
+	Tasks                      []*Task             `json:"tasks,omitempty"`
+	Ports                      []int               `json:"ports"`
+	PortDefinitions            *[]PortDefinition   `json:"portDefinitions,omitempty"`
+	RequirePorts               *bool               `json:"requirePorts,omitempty"`
+	BackoffSeconds             *float64            `json:"backoffSeconds,omitempty"`
+	BackoffFactor              *float64            `json:"backoffFactor,omitempty"`
+	MaxLaunchDelaySeconds      *float64            `json:"maxLaunchDelaySeconds,omitempty"`
+	TaskKillGracePeriodSeconds *float64            `json:"taskKillGracePeriodSeconds,omitempty"`
+	Deployments                []map[string]string `json:"deployments,omitempty"`
 	// Available when embedding readiness information through query parameter.
 	ReadinessCheckResults *[]ReadinessCheckResult `json:"readinessCheckResults,omitempty"`
 	Dependencies          []string                `json:"dependencies"`
@@ -99,7 +98,8 @@ type Application struct {
 	LastTaskFailure       *LastTaskFailure        `json:"lastTaskFailure,omitempty"`
 	Fetch                 *[]Fetch                `json:"fetch,omitempty"`
 	IPAddressPerTask      *IPAddressPerTask       `json:"ipAddress,omitempty"`
-	Secrets               *map[string]Secret      `json:"secrets,omitempty"`
+	Env                   map[string]string       `json:"env,omitempty"`
+	Secrets               map[string]Secret       `json:"secrets,omitempty"`
 }
 
 // ApplicationVersions is a collection of application versions for a specific app in marathon
@@ -153,7 +153,8 @@ type Stats struct {
 // Secret is a reference to an existing secret object whose value may be used
 // as the value of any referencing environment variables.
 type Secret struct {
-	Source string `json:"source"`
+	EnvVar string
+	Source string
 }
 
 // SetIPAddressPerTask defines that the application will have a IP address defines by a external agent.
@@ -368,7 +369,7 @@ func (r *Application) AddEnv(name, value string) *Application {
 	if r.Env == nil {
 		r.EmptyEnvs()
 	}
-	(*r.Env)[name] = EnvironmentVariable{value, EnvSecret{}}
+	(r.Env)[name] = value
 
 	return r
 }
@@ -377,7 +378,7 @@ func (r *Application) AddEnv(name, value string) *Application {
 // the environments of an application that already has environments set (setting env to nil will
 // keep the current value)
 func (r *Application) EmptyEnvs() *Application {
-	r.Env = &map[string]EnvironmentVariable{}
+	r.Env = make(map[string]string)
 
 	return r
 }
@@ -390,11 +391,7 @@ func (r *Application) AddSecret(envvar, name, source string) *Application {
 	if r.Secrets == nil {
 		r.EmptySecrets()
 	}
-	if r.Env == nil {
-		r.EmptyEnvs()
-	}
-	(*r.Secrets)[name] = Secret{Source: source}
-	(*r.Env)[envvar] = EnvironmentVariable{"", EnvSecret{Secret: name}}
+	(r.Secrets)[name] = Secret{EnvVar: envvar, Source: source}
 
 	return r
 }
@@ -403,7 +400,7 @@ func (r *Application) AddSecret(envvar, name, source string) *Application {
 // the secrets of an application that already has secrets set (setting secrets to nil will
 // keep the current value)
 func (r *Application) EmptySecrets() *Application {
-	r.Secrets = &map[string]Secret{}
+	r.Secrets = make(map[string]Secret)
 
 	return r
 }
