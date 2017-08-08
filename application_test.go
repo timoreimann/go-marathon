@@ -207,8 +207,14 @@ func TestApplicationEnvs(t *testing.T) {
 	assert.Equal(t, "top", app.Secrets["secret1"].EnvVar)
 
 	app.EmptyEnvs()
-	assert.NotNil(t, app.Env)
-	assert.Equal(t, 0, len(app.Env))
+	if assert.NotNil(t, app.Env) {
+		assert.Equal(t, 0, len(app.Env))
+	}
+
+	app.EmptySecrets()
+	if assert.NotNil(t, app.Secrets) {
+		assert.Equal(t, 0, len(app.Secrets))
+	}
 }
 
 func TestApplicationSecrets(t *testing.T) {
@@ -222,8 +228,9 @@ func TestApplicationSecrets(t *testing.T) {
 	assert.Equal(t, Secret{EnvVar: "MY_SECOND_SECRET", Source: "path/to/my/other/secret"}, app.Secrets["secret1"])
 
 	app.EmptySecrets()
-	assert.NotNil(t, app.Secrets)
-	assert.Equal(t, 0, len(app.Secrets))
+	if assert.NotNil(t, app.Secrets) {
+		assert.Equal(t, 0, len(app.Secrets))
+	}
 }
 
 func TestApplicationSetExecutor(t *testing.T) {

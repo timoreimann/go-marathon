@@ -49,53 +49,44 @@ func (app *Application) UnmarshalJSON(b []byte) error {
 	env := make(map[string]string)
 	secrets := make(map[string]Secret)
 
-	if aux.Env != nil {
-		for k, v := range aux.Env {
-			if s, ok := v.(string); ok {
-				env[k] = s
-				continue
-			}
-			tmp, err := json.Marshal(v)
-			if err != nil {
-				return fmt.Errorf("unrecognized environment variable type: %s", v)
-			}
-			s := new(TmpEnvSecret)
-			if err := json.Unmarshal(tmp, &s); err != nil {
-				return fmt.Errorf("unrecognized environment variable type: %s", v)
-			}
-			secrets[s.Secret] = Secret{EnvVar: k}
-
+	for k, v := range aux.Env {
+		if s, ok := v.(string); ok {
+			env[k] = s
+			continue
 		}
-		app.Env = env
-	}
-	if aux.Secrets != nil {
-		for k, v := range aux.Secrets {
-			tmp := secrets[k]
-			tmp.Source = v.Source
-			secrets[k] = tmp
+		tmp, err := json.Marshal(v)
+		if err != nil {
+			return fmt.Errorf("unrecognized environment variable type: %s", v)
 		}
-		app.Secrets = secrets
+		s := new(TmpEnvSecret)
+		if err := json.Unmarshal(tmp, &s); err != nil {
+			return fmt.Errorf("unrecognized environment variable type: %s", v)
+		}
+		secrets[s.Secret] = Secret{EnvVar: k}
 	}
+	app.Env = env
+	for k, v := range aux.Secrets {
+		tmp := secrets[k]
+		tmp.Source = v.Source
+		secrets[k] = tmp
+	}
+	app.Secrets = secrets
 	return nil
 }
 
-// MarshalJSON marshals secrets into it's environment variable and secret pieces and all environment
-// variables
+// MarshalJSON marshals secrets into its environment variable and secret pieces, and all other environment
+// variables into into env
 func (app *Application) MarshalJSON() ([]byte, error) {
 	env := make(map[string]interface{})
 	secrets := make(map[string]TmpSecret)
 
-	if app.Env != nil {
-		for k, v := range app.Env {
-			env[string(k)] = string(v)
-		}
+	for k, v := range app.Env {
+		env[string(k)] = string(v)
 	}
 
-	if app.Secrets != nil {
-		for k, v := range app.Secrets {
-			env[v.EnvVar] = TmpEnvSecret{Secret: k}
-			secrets[k] = TmpSecret{v.Source}
-		}
+	for k, v := range app.Secrets {
+		env[v.EnvVar] = TmpEnvSecret{Secret: k}
+		secrets[k] = TmpSecret{v.Source}
 	}
 	aux := &struct {
 		*Alias

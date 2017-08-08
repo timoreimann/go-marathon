@@ -64,6 +64,7 @@ type Application struct {
 	CPUs                       float64             `json:"cpus,omitempty"`
 	GPUs                       *float64            `json:"gpus,omitempty"`
 	Disk                       *float64            `json:"disk,omitempty"`
+	Env                        map[string]string   `json:"env,omitempty"`
 	Executor                   *string             `json:"executor,omitempty"`
 	HealthChecks               *[]HealthCheck      `json:"healthChecks,omitempty"`
 	ReadinessChecks            *[]ReadinessCheck   `json:"readinessChecks,omitempty"`
@@ -98,7 +99,6 @@ type Application struct {
 	LastTaskFailure       *LastTaskFailure        `json:"lastTaskFailure,omitempty"`
 	Fetch                 *[]Fetch                `json:"fetch,omitempty"`
 	IPAddressPerTask      *IPAddressPerTask       `json:"ipAddress,omitempty"`
-	Env                   map[string]string       `json:"env,omitempty"`
 	Secrets               map[string]Secret       `json:"secrets,omitempty"`
 }
 
@@ -384,14 +384,14 @@ func (r *Application) EmptyEnvs() *Application {
 }
 
 // AddSecret adds a secret declaration
-//    envvar: the name of the environment variable
-//		name:	the name of the secret
-//		source:	the source ID of the secret
-func (r *Application) AddSecret(envvar, name, source string) *Application {
+// envVar: the name of the environment variable
+// name:	the name of the secret
+// source:	the source ID of the secret
+func (r *Application) AddSecret(envVar, name, source string) *Application {
 	if r.Secrets == nil {
 		r.EmptySecrets()
 	}
-	(r.Secrets)[name] = Secret{EnvVar: envvar, Source: source}
+	(r.Secrets)[name] = Secret{EnvVar: envVar, Source: source}
 
 	return r
 }

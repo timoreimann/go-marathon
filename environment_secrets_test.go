@@ -17,29 +17,13 @@ limitations under the License.
 package marathon
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func TestEnvironmentVariableAPI(t *testing.T) {
-	app := Application{}
-	require.Nil(t, app.Env)
-	app.AddEnv("FOO", "bar")
-	app.AddSecret("TOP", "secret", "/path/to/secret")
-	assert.Equal(t, `bar`, app.Env["FOO"])
-	assert.Equal(t, "TOP", app.Secrets["secret"].EnvVar)
-	assert.Equal(t, "/path/to/secret", app.Secrets["secret"].Source)
-
-	app.EmptyEnvs()
-	require.NotNil(t, app.Env)
-	assert.Equal(t, "", app.Env["FOO"])
-
-	app.EmptySecrets()
-	require.NotNil(t, app.Secrets)
-	assert.Equal(t, Secret{}, app.Secrets["secret"])
-}
 
 func TestEnvironmentVariableUnmarshal(t *testing.T) {
 	defaultConfig := NewDefaultConfig()
@@ -60,7 +44,17 @@ func TestEnvironmentVariableUnmarshal(t *testing.T) {
 	secrets := application.Secrets
 
 	require.NotNil(t, env)
-	assert.Equal(t, `bar`, env["FOO"])
+	assert.Equal(t, "bar", env["FOO"])
 	assert.Equal(t, "TOP", secrets["secret"].EnvVar)
 	assert.Equal(t, "/path/to/secret", secrets["secret"].Source)
+}
+
+func TestEnvironmentVaribleMarshal(t *testing.T) {
+	testApp := new(Application)
+	testApp.AddSecret("TOP", "secret1", "/path/to/secret")
+	testApp.AddEnv("FOO", "bar")
+
+	tmp, err := json.MarshalIndent(testApp, "", "  ")
+	assert.Nil(t, err)
+	assert.Equal(t, strings.TrimSpace(testApp.String()), string(tmp))
 }
