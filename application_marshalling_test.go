@@ -44,9 +44,9 @@ func TestEnvironmentVariableUnmarshal(t *testing.T) {
 	secrets := application.Secrets
 
 	require.NotNil(t, env)
-	assert.Equal(t, "bar", env["FOO"])
-	assert.Equal(t, "TOP", secrets["secret"].EnvVar)
-	assert.Equal(t, "/path/to/secret", secrets["secret"].Source)
+	assert.Equal(t, "bar", (*env)["FOO"])
+	assert.Equal(t, "TOP", (*secrets)["secret"].EnvVar)
+	assert.Equal(t, "/path/to/secret", (*secrets)["secret"].Source)
 }
 
 func TestEnvironmentVaribleMarshal(t *testing.T) {

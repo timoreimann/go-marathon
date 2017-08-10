@@ -199,22 +199,18 @@ func TestApplicationEnvs(t *testing.T) {
 	assert.Nil(t, app.Env)
 
 	app.AddEnv("hello", "world").AddEnv("foo", "bar").AddSecret("top", "secret1", "/path/to/secret")
-	assert.Equal(t, 2, len(app.Env))
-	assert.Equal(t, 1, len(app.Secrets))
-	assert.Equal(t, "world", app.Env["hello"])
-	assert.Equal(t, "bar", app.Env["foo"])
-	assert.Equal(t, "/path/to/secret", app.Secrets["secret1"].Source)
-	assert.Equal(t, "top", app.Secrets["secret1"].EnvVar)
+	assert.Equal(t, 2, len((*app.Env)))
+	assert.Equal(t, 1, len((*app.Secrets)))
+	assert.Equal(t, "world", (*app.Env)["hello"])
+	assert.Equal(t, "bar", (*app.Env)["foo"])
+	assert.Equal(t, "/path/to/secret", (*app.Secrets)["secret1"].Source)
+	assert.Equal(t, "top", (*app.Secrets)["secret1"].EnvVar)
 
 	app.EmptyEnvs()
-	if assert.NotNil(t, app.Env) {
-		assert.Equal(t, 0, len(app.Env))
-	}
+	assert.NotNil(t, app.Env)
 
 	app.EmptySecrets()
-	if assert.NotNil(t, app.Secrets) {
-		assert.Equal(t, 0, len(app.Secrets))
-	}
+	assert.NotNil(t, app.Secrets)
 }
 
 func TestApplicationSecrets(t *testing.T) {
@@ -223,14 +219,12 @@ func TestApplicationSecrets(t *testing.T) {
 
 	app.AddSecret("MY_FIRST_SECRET", "secret0", "path/to/my/secret")
 	app.AddSecret("MY_SECOND_SECRET", "secret1", "path/to/my/other/secret")
-	assert.Equal(t, 2, len(app.Secrets))
-	assert.Equal(t, Secret{EnvVar: "MY_FIRST_SECRET", Source: "path/to/my/secret"}, app.Secrets["secret0"])
-	assert.Equal(t, Secret{EnvVar: "MY_SECOND_SECRET", Source: "path/to/my/other/secret"}, app.Secrets["secret1"])
+	assert.Equal(t, 2, len(*app.Secrets))
+	assert.Equal(t, Secret{EnvVar: "MY_FIRST_SECRET", Source: "path/to/my/secret"}, (*app.Secrets)["secret0"])
+	assert.Equal(t, Secret{EnvVar: "MY_SECOND_SECRET", Source: "path/to/my/other/secret"}, (*app.Secrets)["secret1"])
 
 	app.EmptySecrets()
-	if assert.NotNil(t, app.Secrets) {
-		assert.Equal(t, 0, len(app.Secrets))
-	}
+	assert.NotNil(t, app.Secrets)
 }
 
 func TestApplicationSetExecutor(t *testing.T) {
@@ -372,8 +366,8 @@ func TestApplications(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, applications)
 	assert.Equal(t, len(applications.Apps), 2)
-	assert.Equal(t, (applications.Apps[0].Secrets)["secret0"].EnvVar, "SECRET1")
-	assert.Equal(t, (applications.Apps[0].Secrets)["secret0"].Source, "secret/definition/id")
+	assert.Equal(t, (*applications.Apps[0].Secrets)["secret0"].EnvVar, "SECRET1")
+	assert.Equal(t, (*applications.Apps[0].Secrets)["secret0"].Source, "secret/definition/id")
 
 	v := url.Values{}
 	v.Set("cmd", "nginx")

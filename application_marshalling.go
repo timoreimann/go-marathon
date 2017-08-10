@@ -46,12 +46,12 @@ func (app *Application) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, aux); err != nil {
 		return err
 	}
-	env := make(map[string]string)
-	secrets := make(map[string]Secret)
+	env := &map[string]string{}
+	secrets := &map[string]Secret{}
 
 	for k, v := range aux.Env {
 		if s, ok := v.(string); ok {
-			env[k] = s
+			(*env)[k] = s
 			continue
 		}
 		tmp, err := json.Marshal(v)
@@ -62,13 +62,13 @@ func (app *Application) UnmarshalJSON(b []byte) error {
 		if err := json.Unmarshal(tmp, &s); err != nil {
 			return fmt.Errorf("unrecognized environment variable type: %s", v)
 		}
-		secrets[s.Secret] = Secret{EnvVar: k}
+		(*secrets)[s.Secret] = Secret{EnvVar: k}
 	}
 	app.Env = env
 	for k, v := range aux.Secrets {
-		tmp := secrets[k]
+		tmp := (*secrets)[k]
 		tmp.Source = v.Source
-		secrets[k] = tmp
+		(*secrets)[k] = tmp
 	}
 	app.Secrets = secrets
 	return nil
@@ -80,13 +80,16 @@ func (app *Application) MarshalJSON() ([]byte, error) {
 	env := make(map[string]interface{})
 	secrets := make(map[string]TmpSecret)
 
-	for k, v := range app.Env {
-		env[string(k)] = string(v)
+	if app.Env != nil {
+		for k, v := range *app.Env {
+			env[string(k)] = string(v)
+		}
 	}
-
-	for k, v := range app.Secrets {
-		env[v.EnvVar] = TmpEnvSecret{Secret: k}
-		secrets[k] = TmpSecret{v.Source}
+	if app.Secrets != nil {
+		for k, v := range *app.Secrets {
+			env[v.EnvVar] = TmpEnvSecret{Secret: k}
+			secrets[k] = TmpSecret{v.Source}
+		}
 	}
 	aux := &struct {
 		*Alias
