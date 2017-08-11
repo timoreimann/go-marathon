@@ -38,8 +38,8 @@ type TmpSecret struct {
 func (app *Application) UnmarshalJSON(b []byte) error {
 	aux := &struct {
 		*Alias
-		Env     map[string]interface{} `json:"env,omitempty"`
-		Secrets map[string]TmpSecret   `json:"secrets,omitempty"`
+		Env     map[string]interface{} `json:"env"`
+		Secrets map[string]TmpSecret   `json:"secrets"`
 	}{
 		Alias: (*Alias)(app),
 	}

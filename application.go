@@ -64,7 +64,7 @@ type Application struct {
 	CPUs                       float64             `json:"cpus,omitempty"`
 	GPUs                       *float64            `json:"gpus,omitempty"`
 	Disk                       *float64            `json:"disk,omitempty"`
-	Env                        *map[string]string  `json:"env,omitempty"`
+	Env                        *map[string]string  `json:"-"`
 	Executor                   *string             `json:"executor,omitempty"`
 	HealthChecks               *[]HealthCheck      `json:"healthChecks,omitempty"`
 	ReadinessChecks            *[]ReadinessCheck   `json:"readinessChecks,omitempty"`
@@ -99,7 +99,7 @@ type Application struct {
 	LastTaskFailure       *LastTaskFailure        `json:"lastTaskFailure,omitempty"`
 	Fetch                 *[]Fetch                `json:"fetch,omitempty"`
 	IPAddressPerTask      *IPAddressPerTask       `json:"ipAddress,omitempty"`
-	Secrets               *map[string]Secret      `json:"secrets,omitempty"`
+	Secrets               *map[string]Secret      `json:"-"`
 }
 
 // ApplicationVersions is a collection of application versions for a specific app in marathon
