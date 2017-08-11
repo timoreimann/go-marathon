@@ -49,20 +49,21 @@ func (app *Application) UnmarshalJSON(b []byte) error {
 	env := &map[string]string{}
 	secrets := &map[string]Secret{}
 
-	for k, v := range aux.Env {
-		if s, ok := v.(string); ok {
-			(*env)[k] = s
-			continue
+	for envName, genericEnvValue := range aux.Env {
+		switch envValOrSecret := genericEnvValue.(type) {
+		case string:
+			(*env)[envName] = envValOrSecret
+		case map[string]interface{}:
+			for _, secretStore := range envValOrSecret {
+				if secStore, ok := secretStore.(string); ok {
+					(*secrets)[secStore] = Secret{EnvVar: envName}
+					break
+				}
+				return fmt.Errorf("unexpected secret value type %T", envValOrSecret[envName])
+			}
+		default:
+			return fmt.Errorf("unexpected environment variable type %T", envValOrSecret)
 		}
-		tmp, err := json.Marshal(v)
-		if err != nil {
-			return fmt.Errorf("unrecognized environment variable type: %s", v)
-		}
-		s := new(TmpEnvSecret)
-		if err := json.Unmarshal(tmp, &s); err != nil {
-			return fmt.Errorf("unrecognized environment variable type: %s", v)
-		}
-		(*secrets)[s.Secret] = Secret{EnvVar: k}
 	}
 	app.Env = env
 	for k, v := range aux.Secrets {
